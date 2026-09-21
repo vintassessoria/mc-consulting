@@ -146,7 +146,7 @@
       return '<div class="box-opicionais-home">' + icone + '<span>' + esc(texto) + '</span></div>';
     }
 
-    var link = 'veiculo.html?id=' + encodeURIComponent(v.id);
+    var link = '/veiculo?id=' + encodeURIComponent(v.id);
 
     return '<article class="carro">' +
       '<div class="vitrine-favoritos">' +

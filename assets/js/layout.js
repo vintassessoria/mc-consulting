@@ -14,6 +14,12 @@
     });
   }
 
+  // "/empresa" e "empresa.html" viram "empresa"; "/" vira "index".
+  // Serve para casar o href do menu com o data-page do <body>.
+  function rota(href) {
+    return String(href || '').replace(/^\//, '').replace(/\.html$/, '') || 'index';
+  }
+
   // "2021/2022"; só o modelo quando os anos coincidem; "—" quando não informado
   window.anoVeiculo = function (v) {
     if (!v.anoFab && !v.anoModelo) return '—';
@@ -41,7 +47,7 @@
   function header() {
     var pagina = document.body.dataset.page || '';
     var itens = (S.menu || []).map(function (m) {
-      var ativo = m.href.replace('.html', '') === pagina ? ' class="active"' : '';
+      var ativo = rota(m.href) === pagina ? ' class="active"' : '';
       return '<li' + ativo + '><a href="' + m.href + '">' + m.label + '</a></li>';
     }).join('');
 
@@ -56,7 +62,7 @@
     return '' +
       '<nav id="menu">' +
         '<div class="navbar-inner">' +
-          '<a href="index.html" class="navbar-brand" title="' + (S.nome || '') + '">' +
+          '<a href="/" class="navbar-brand" title="' + (S.nome || '') + '">' +
             '<img src="' + (S.logo || 'assets/img/logo-preta.png') + '" alt="' + esc(S.nome || '') + '">' +
           '</a>' +
           '<button class="navbar-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">' +
@@ -111,7 +117,7 @@
     function nuvem(titulo, lista) {
       if (!lista || !lista.length) return '';
       return '<h3>' + titulo + '</h3><ul>' +
-        lista.map(function (t) { return '<li><a href="index.html">' + t + '</a></li>'; }).join('') +
+        lista.map(function (t) { return '<li><a href="/">' + t + '</a></li>'; }).join('') +
         '</ul>';
     }
 
@@ -163,7 +169,7 @@
     html +=
       '<div class="modal-cookie" id="cookieBar" hidden>' +
         '<div class="cookie-inner">' +
-          '<p>Para proteger e melhorar a sua experiência no site, utilizamos cookies e dados pessoais de acordo com nossos <a href="politica-de-privacidade.html">Termos de Uso e Política de Privacidade</a>.</p>' +
+          '<p>Para proteger e melhorar a sua experiência no site, utilizamos cookies e dados pessoais de acordo com nossos <a href="/politica-de-privacidade">Termos de Uso e Política de Privacidade</a>.</p>' +
           '<button type="button" class="btn btn-danger" data-aceitar-cookies>OK</button>' +
         '</div>' +
       '</div>';

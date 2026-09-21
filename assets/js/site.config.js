@@ -27,11 +27,11 @@ window.SITE = {
   },
 
   menu: [
-    { label: "Empresa",      href: "empresa.html" },
-    { label: "Estoque",      href: "index.html" },
-    { label: "Avaliação",    href: "avaliacao.html" },
-    { label: "Financiamento", href: "financiamento.html" },
-    { label: "Contato",      href: "contato.html" },
+    { label: "Empresa",       href: "/empresa" },
+    { label: "Estoque",       href: "/" },
+    { label: "Avaliação",     href: "/avaliacao" },
+    { label: "Financiamento", href: "/financiamento" },
+    { label: "Contato",       href: "/contato" },
   ],
 
   // Nuvem de tags do rodapé — preencha quando tiver o estoque
