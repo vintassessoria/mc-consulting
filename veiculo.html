@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detalhes do veículo</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  /* Layout específico da página de detalhe */
+  .detalhe { display: grid; grid-template-columns: 1.6fr 1fr; gap: 30px; align-items: start; }
+  .galeria { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .galeria .principal { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
+  .galeria .miniatura { aspect-ratio: 4 / 3; }
+  .galeria img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); display: block; }
+  .galeria .img-placeholder { border-radius: var(--radius); font-size: 10px; }
+  .painel { border: 1px solid var(--borda); border-radius: var(--radius); padding: 20px; box-shadow: var(--sombra); }
+  .painel .titulo-veiculo .first-name { font-size: 24px; font-weight: 700; text-transform: uppercase; }
+  .painel .titulo-veiculo .last-name  { font-size: 17px; font-weight: 400; color: var(--texto-fraco); text-transform: uppercase; }
+  .painel .preco { font-size: 30px; margin: 12px 0; }
+  .ficha { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 18px 0; }
+  .ficha div { background: var(--cinza-box); border-radius: var(--radius); padding: 8px 10px; font-size: 12px; }
+  .ficha strong { display: block; font-size: 10px; text-transform: uppercase; color: var(--texto-fraco); font-weight: 500; }
+  .acoes { display: grid; gap: 8px; }
+  .opcionais-lista { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opcionais-lista li { background: var(--cinza-box); border-radius: 20px; padding: 4px 12px; font-size: 12px; }
+  @media (max-width: 991px) { .detalhe { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="veiculo">
+
+<div data-layout="header"></div>
+
+<main class="page">
+  <div class="container page-interna">
+    <div class="detalhe">
+
+      <div class="galeria" id="galeria">
+        <div class="principal"><div class="img-placeholder">Foto principal</div></div>
+        <div class="miniatura"><div class="img-placeholder">Foto 2</div></div>
+        <div class="miniatura"><div class="img-placeholder">Foto 3</div></div>
+        <div class="miniatura"><div class="img-placeholder">Foto 4</div></div>
+        <div class="miniatura"><div class="img-placeholder">Foto 5</div></div>
+      </div>
+
+      <aside class="painel" id="painel">
+        <h1 class="titulo-veiculo">
+          <span class="first-name" id="v-nome">Marca Modelo</span><br>
+          <span class="last-name" id="v-versao">Versão</span>
+        </h1>
+        <div class="preco-antigo" id="v-preco-antigo" hidden></div>
+        <div class="preco" id="v-preco">R$ 0,00</div>
+
+        <div class="ficha">
+          <div><strong>Ano</strong><span id="v-ano">—</span></div>
+          <div><strong>Km</strong><span id="v-km">—</span></div>
+          <div><strong>Câmbio</strong><span id="v-cambio">—</span></div>
+          <div><strong>Combustível</strong><span id="v-combustivel">—</span></div>
+          <div><strong>Cor</strong><span id="v-cor">—</span></div>
+          <div><strong>Carroceria</strong><span id="v-carroceria">—</span></div>
+        </div>
+
+        <div class="acoes">
+          <a class="btn btn-danger btn-lg btn-block" id="v-whats" href="#">Falar no WhatsApp</a>
+          <a class="btn btn-primary btn-lg btn-block" href="financiamento.html">Simular financiamento</a>
+        </div>
+      </aside>
+
+    </div>
+
+    <h2 style="margin:40px 0 12px">Opcionais</h2>
+    <ul class="opcionais-lista" id="v-opcionais">
+      <li style="color:var(--texto-fraco)">Lista de opcionais — a montar.</li>
+    </ul>
+  </div>
+</main>
+
+<div data-layout="footer"></div>
+
+<script src="assets/js/site.config.js"></script>
+<script src="assets/js/config.supabase.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/dados.js"></script>
+<script src="assets/js/fonte.js"></script>
+<script src="assets/js/layout.js"></script>
+<script>
+/* Preenche a página a partir de dados.js usando ?id= da URL */
+document.addEventListener('layout:pronto', function () {
+  (window.estoquePronto || Promise.resolve()).then(preencher);
+});
+
+function preencher() {
+  var id = new URLSearchParams(location.search).get('id');
+  var v = (window.VEICULOS || []).find(function (x) {
+    return String(x.id) === String(id) || String(x.uuid) === String(id);
+  });
+  if (!v) return;
+
+  var brl = function (n) { return Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 }); };
+  var set = function (el, txt) { var e = document.getElementById(el); if (e) e.textContent = txt; };
+
+  document.title = v.marca + ' ' + v.modelo;
+  set('v-nome', v.marca + ' ' + v.modelo);
+  set('v-versao', v.versao || '');
+  set('v-preco', v.preco ? 'R$ ' + brl(v.preco) : 'Consulte');
+  set('v-ano', window.anoVeiculo ? window.anoVeiculo(v) : (v.anoModelo || '—'));
+  set('v-km', Number(v.km || 0).toLocaleString('pt-BR') + ' km');
+  set('v-cambio', v.cambio || '—');
+  set('v-combustivel', v.combustivel || '—');
+  set('v-cor', v.corDetalhe || v.cor || '—');
+  set('v-carroceria', v.carroceria || '—');
+
+  if (v.preco && v.precoAntigo) {
+    var pa = document.getElementById('v-preco-antigo');
+    pa.textContent = 'R$ ' + brl(v.precoAntigo);
+    pa.hidden = false;
+  }
+
+  var wa = (window.SITE.contato || {}).whatsappLink;
+  if (wa) {
+    document.getElementById('v-whats').href =
+      wa + '?text=' + encodeURIComponent('Olá! Tenho interesse no ' + v.marca + ' ' + v.modelo);
+  }
+
+  if (Array.isArray(v.opcionais) && v.opcionais.length) {
+    document.getElementById('v-opcionais').innerHTML =
+      v.opcionais.map(function (o) { return '<li>' + o + '</li>'; }).join('');
+  }
+
+  // Galeria: usa as fotos cadastradas; sem fotos, mantém os placeholders
+  var fotos = (v.fotos && v.fotos.length) ? v.fotos : (v.foto ? [v.foto] : []);
+  if (fotos.length) {
+    var g = document.getElementById('galeria');
+    g.innerHTML =
+      '<div class="principal"><img src="' + fotos[0] + '" alt="' + v.marca + ' ' + v.modelo + '"></div>' +
+      fotos.slice(1, 5).map(function (f) {
+        return '<div class="miniatura"><img src="' + f + '" alt=""></div>';
+      }).join('');
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel · MC Consulting</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- ===================================================== NÃO CONFIGURADO -->
+<section id="tela-config" hidden>
+  <div class="adm-login" style="max-width:560px">
+    <img src="../assets/img/logo-preta.png" alt="MC Consulting">
+    <h1>Painel ainda não conectado</h1>
+    <div class="aviso aviso-info">
+      Preencha <code>assets/js/config.supabase.js</code> com a <strong>Project URL</strong>
+      e a chave <strong>anon public</strong> do seu projeto no Supabase.
+      Antes disso o site mostra os veículos do arquivo <code>assets/js/dados.js</code>
+      e este painel fica indisponível.
+    </div>
+    <p style="font-size:13px;color:var(--texto-fraco)">
+      O passo a passo completo está no <code>README.md</code>, na seção “Painel e banco de dados”.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================ LOGIN -->
+<section id="tela-login" hidden>
+  <form class="adm-login" id="form-login">
+    <img src="../assets/img/logo-preta.png" alt="MC Consulting">
+    <h1>Acesso ao painel</h1>
+    <div class="aviso aviso-erro" id="login-erro" hidden></div>
+    <div class="campo">
+      <label for="login-email">E-mail</label>
+      <input type="email" id="login-email" autocomplete="username" required>
+    </div>
+    <div class="campo">
+      <label for="login-senha">Senha</label>
+      <input type="password" id="login-senha" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg btn-block" id="login-botao">Entrar</button>
+  </form>
+</section>
+
+<!-- ================================================================ APP -->
+<div id="tela-app" hidden>
+
+  <header class="adm-topo">
+    <img src="../assets/img/logo-preta.png" alt="MC Consulting">
+    <span class="adm-tag">Painel</span>
+    <div class="adm-dir">
+      <a class="btn btn-outline" href="../index.html" target="_blank" rel="noopener">Ver site</a>
+      <span class="adm-email" id="usuario-email"></span>
+      <button class="btn btn-outline" id="botao-sair">Sair</button>
+    </div>
+  </header>
+
+  <main class="adm-corpo">
+
+    <!-- ------------------------------------------------------- LISTA --- -->
+    <section id="secao-lista">
+      <div class="adm-cabecalho">
+        <h1>Estoque</h1>
+        <span class="adm-email" id="contador"></span>
+        <div class="adm-busca">
+          <input type="text" id="busca" placeholder="Buscar por marca, modelo ou versão">
+        </div>
+        <button class="btn btn-primary" id="botao-novo">+ Novo veículo</button>
+      </div>
+
+      <div class="aviso aviso-ok" id="lista-recado" hidden></div>
+
+      <div class="envolve-tabela">
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th style="width:80px">Foto</th>
+              <th>Veículo</th>
+              <th style="width:110px">Ano</th>
+              <th style="width:120px">Km</th>
+              <th style="width:150px">Preço</th>
+              <th style="width:110px">Situação</th>
+              <th style="width:190px"></th>
+            </tr>
+          </thead>
+          <tbody id="corpo-tabela"></tbody>
+        </table>
+        <div class="vazio" id="lista-vazia" hidden>
+          Nenhum veículo cadastrado. Use <strong>+ Novo veículo</strong> para começar.
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------- EDIÇÃO --- -->
+    <section id="secao-form" hidden>
+      <div class="adm-cabecalho">
+        <h1 id="form-titulo">Novo veículo</h1>
+        <button class="btn btn-outline" id="botao-voltar" style="margin-left:auto">Voltar</button>
+      </div>
+
+      <div class="aviso aviso-erro" id="form-erro" hidden></div>
+
+      <form id="form-veiculo">
+
+        <div class="cartao">
+          <h2>Identificação</h2>
+          <div class="grade grade-3">
+            <div class="campo">
+              <label for="f-marca">Marca *</label>
+              <input type="text" id="f-marca" required placeholder="TOYOTA">
+            </div>
+            <div class="campo">
+              <label for="f-modelo">Modelo *</label>
+              <input type="text" id="f-modelo" required placeholder="HILUX">
+            </div>
+            <div class="campo">
+              <label for="f-versao">Versão</label>
+              <input type="text" id="f-versao" placeholder="SRX 2.8 Diesel 4x4 Aut.">
+            </div>
+          </div>
+          <div class="grade grade-4">
+            <div class="campo">
+              <label for="f-ano-fab">Ano de fabricação</label>
+              <input type="number" id="f-ano-fab" min="1950" max="2100" placeholder="2021">
+            </div>
+            <div class="campo">
+              <label for="f-ano-modelo">Ano do modelo</label>
+              <input type="number" id="f-ano-modelo" min="1950" max="2100" placeholder="2022">
+            </div>
+            <div class="campo">
+              <label for="f-km">Quilometragem</label>
+              <input type="number" id="f-km" min="0" placeholder="126000">
+            </div>
+            <div class="campo">
+              <label for="f-cidade">Cidade</label>
+              <input type="text" id="f-cidade" placeholder="Brasília (DF)">
+            </div>
+          </div>
+        </div>
+
+        <div class="cartao">
+          <h2>Valores</h2>
+          <div class="grade grade-3">
+            <div class="campo">
+              <label for="f-preco">Preço de venda</label>
+              <input type="number" id="f-preco" min="0" step="0.01" placeholder="0">
+              <p class="dica">Deixe 0 para exibir “Consulte” no site.</p>
+            </div>
+            <div class="campo">
+              <label for="f-preco-antigo">Preço “de” (riscado)</label>
+              <input type="number" id="f-preco-antigo" min="0" step="0.01" placeholder="0">
+              <p class="dica">Só aparece se houver preço de venda.</p>
+            </div>
+            <div class="campo">
+              <label for="f-ordem">Prioridade na vitrine</label>
+              <input type="number" id="f-ordem" placeholder="0">
+              <p class="dica">Número maior aparece primeiro.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="cartao">
+          <h2>Ficha técnica</h2>
+          <div class="grade grade-3">
+            <div class="campo">
+              <label for="f-combustivel">Combustível</label>
+              <select id="f-combustivel"></select>
+            </div>
+            <div class="campo">
+              <label for="f-cambio">Câmbio</label>
+              <select id="f-cambio"></select>
+            </div>
+            <div class="campo">
+              <label for="f-carroceria">Carroceria</label>
+              <select id="f-carroceria"></select>
+            </div>
+          </div>
+          <div class="grade grade-3">
+            <div class="campo">
+              <label for="f-cor">Cor (usada no filtro)</label>
+              <select id="f-cor"></select>
+            </div>
+            <div class="campo">
+              <label for="f-cor-detalhe">Nome comercial da cor</label>
+              <input type="text" id="f-cor-detalhe" placeholder="Branco Pérola">
+              <p class="dica">Aparece na página do veículo.</p>
+            </div>
+            <div class="campo">
+              <label for="f-cor-hex">Amostra no filtro</label>
+              <input type="color" id="f-cor-hex" value="#cccccc" style="height:40px;padding:4px">
+            </div>
+          </div>
+        </div>
+
+        <div class="cartao">
+          <h2>Fotos</h2>
+          <label class="zona-upload" for="f-fotos">
+            <strong>Clique para enviar fotos</strong>
+            <span>JPG ou PNG. A primeira foto é a capa na vitrine.</span>
+          </label>
+          <input type="file" id="f-fotos" accept="image/*" multiple hidden>
+          <div class="fotos-grade" id="fotos-grade"></div>
+          <p class="dica" id="fotos-status"></p>
+        </div>
+
+        <div class="cartao">
+          <h2>Opcionais e observações</h2>
+          <div class="campo">
+            <label for="f-opcionais">Opcionais</label>
+            <textarea id="f-opcionais" placeholder="Um por linha:&#10;Ar-condicionado&#10;Bancos de Couro&#10;Câmera de ré"></textarea>
+          </div>
+          <div class="campo">
+            <label for="f-observacoes">Observações internas</label>
+            <textarea id="f-observacoes" placeholder="Anotações da loja (não aparecem no site)."></textarea>
+          </div>
+        </div>
+
+        <div class="cartao">
+          <h2>Situação</h2>
+          <div class="campo-check">
+            <input type="checkbox" id="f-oferta">
+            <label for="f-oferta">Destacar com o selo <strong>Oferta</strong></label>
+          </div>
+          <div class="campo-check">
+            <input type="checkbox" id="f-destaque">
+            <label for="f-destaque">Marcar como destaque</label>
+          </div>
+          <div class="campo-check">
+            <input type="checkbox" id="f-vendido">
+            <label for="f-vendido">Vendido <span style="color:var(--texto-fraco)">— some da vitrine, continua no painel</span></label>
+          </div>
+        </div>
+
+        <div class="rodape-form">
+          <button type="button" class="btn btn-outline" id="botao-excluir" hidden>Excluir</button>
+          <button type="button" class="btn btn-outline" id="botao-cancelar">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-lg" id="botao-salvar">Salvar veículo</button>
+        </div>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<script src="../assets/js/config.supabase.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

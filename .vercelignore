@@ -1,0 +1,7 @@
+# Referência interna — não publicar
+*.pdf
+supabase/
+README.md
+.claude/
+.ignore
+node_modules/

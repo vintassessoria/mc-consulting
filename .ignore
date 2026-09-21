@@ -1,0 +1,64 @@
+# .ignore — lido nativamente pelo Claude Code (busca/descoberta de arquivos).
+# Mesma sintaxe do .gitignore. Nao e um bloqueio de seguranca:
+# Claude ainda le se voce pedir o caminho exato. Para bloqueio duro,
+# use permissions.deny em .claude/settings.json.
+
+# dependencias
+node_modules/
+vendor/
+bower_components/
+.venv/
+__pycache__/
+
+# builds e saidas
+dist/
+build/
+out/
+.next/
+.nuxt/
+target/
+coverage/
+.cache/
+
+# lockfiles (enormes, zero valor semantico)
+*-lock.json
+*.lock
+yarn.lock
+pnpm-lock.yaml
+composer.lock
+
+# assets compilados/minificados
+*.min.js
+*.min.css
+*.map
+
+# binarios e midia
+*.zip
+*.tar.gz
+*.pdf
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+*.ico
+*.mp4
+*.mp3
+
+# ruido
+*.log
+*.sqlite
+*.db
+.DS_Store
+Thumbs.db
+
+# WordPress / temas
+wp-admin/
+wp-includes/
+wp-content/uploads/
+wp-content/cache/

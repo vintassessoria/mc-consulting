@@ -1,0 +1,11 @@
+# Referência interna — 60 MB, não versionar
+*.pdf
+
+# Dependências e temporários
+node_modules/
+.tmp/
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
