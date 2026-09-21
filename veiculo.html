@@ -9,7 +9,16 @@
   /* Layout específico da página de detalhe */
   .detalhe { display: grid; grid-template-columns: 1.6fr 1fr; gap: 30px; align-items: start; }
   .galeria { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .galeria .principal { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
+  /* A principal mostra a foto inteira (contain): o estoque tem fotos
+     verticais de celular, e recortar numa moldura horizontal comia o carro.
+     A altura é limitada para uma foto 9:16 não esticar a página. */
+  .galeria .principal {
+    grid-column: 1 / -1;
+    height: min(68vh, 600px);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--superficie); border-radius: var(--radius); overflow: hidden;
+  }
+  .galeria .principal img { width: 100%; height: 100%; object-fit: contain; }
   .galeria .miniatura { aspect-ratio: 4 / 3; }
   .galeria img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); display: block; }
   .galeria .img-placeholder { border-radius: var(--radius); font-size: 10px; }

@@ -268,7 +268,9 @@ input, select { font: inherit; }
   box-shadow: var(--sombra-alta);
 }
 
-.carro-img { aspect-ratio: 16 / 10; overflow: hidden; background: var(--superficie); }
+/* 4:3 em vez de 16:10: o grid continua uniforme e corta menos as fotos
+   verticais de celular, que são a maioria do estoque. */
+.carro-img { aspect-ratio: 4 / 3; overflow: hidden; background: var(--superficie); }
 .carro-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .35s ease; }
 .box-veiculo-resultado:hover .carro-img img { transform: scale(1.04); }
 .img-placeholder {
