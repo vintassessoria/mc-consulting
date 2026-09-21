@@ -8,20 +8,68 @@
 <style>
   /* Layout específico da página de detalhe */
   .detalhe { display: grid; grid-template-columns: 1.6fr 1fr; gap: 30px; align-items: start; }
-  .galeria { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  /* A principal mostra a foto inteira (contain): o estoque tem fotos
-     verticais de celular, e recortar numa moldura horizontal comia o carro.
-     A altura é limitada para uma foto 9:16 não esticar a página. */
-  .galeria .principal {
-    grid-column: 1 / -1;
-    height: min(68vh, 600px);
-    display: flex; align-items: center; justify-content: center;
-    background: var(--superficie); border-radius: var(--radius); overflow: hidden;
+  /* Sem isto o trilho do carrossel estica a coluna e empurra o painel para fora */
+  .detalhe > * { min-width: 0; }
+  /* ---- Galeria: carrossel com recorte 8,5 x 11 (retrato) ---- */
+  .galeria-palco {
+    position: relative;
+    height: min(70vh, 620px);
+    background: var(--superficie);
+    border-radius: var(--radius);
+    overflow: hidden;
   }
-  .galeria .principal img { width: 100%; height: 100%; object-fit: contain; }
-  .galeria .miniatura { aspect-ratio: 4 / 3; }
-  .galeria img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); display: block; }
-  .galeria .img-placeholder { border-radius: var(--radius); font-size: 10px; }
+  /* Trilho com scroll-snap: arrastar no celular já funciona sem JS */
+  .galeria-trilho {
+    display: flex; align-items: center; gap: 10px;
+    height: 100%; padding: 0 10px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    scrollbar-width: none; -ms-overflow-style: none;
+    scroll-behavior: smooth;
+  }
+  .galeria-trilho::-webkit-scrollbar { display: none; }
+  .galeria-slide {
+    flex: 0 0 auto; margin: 0;
+    height: 100%; aspect-ratio: 8.5 / 11;
+    scroll-snap-align: center;
+    border-radius: var(--radius); overflow: hidden; background: #e9eaee;
+  }
+  .galeria-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .galeria-nav {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.92); color: var(--texto);
+    border: none; border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0,0,0,.18);
+    font-size: 22px; line-height: 1;
+    transition: background-color .15s ease, opacity .15s ease;
+  }
+  .galeria-nav:hover { background: #fff; }
+  .galeria-nav[disabled] { opacity: .35; cursor: default; }
+  .galeria-nav.prev { left: 14px; }
+  .galeria-nav.next { right: 14px; }
+
+  .galeria-contador {
+    position: absolute; right: 14px; bottom: 14px; z-index: 2;
+    padding: 4px 12px; border-radius: 999px;
+    background: rgba(10,10,10,.68); color: #fff;
+    font-size: 12px; font-weight: 500;
+  }
+
+  .galeria-miniaturas { display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; scrollbar-width: thin; }
+  .galeria-mini {
+    flex: 0 0 auto; width: 84px; padding: 0;
+    aspect-ratio: 8.5 / 11;
+    border: 2px solid transparent; border-radius: var(--radius-sm);
+    overflow: hidden; background: var(--superficie); cursor: pointer;
+    opacity: .6; transition: opacity .15s ease, border-color .15s ease;
+  }
+  .galeria-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .galeria-mini.ativa { opacity: 1; border-color: var(--azul); }
+  .galeria-mini:hover { opacity: 1; }
+
+  .galeria .img-placeholder { border-radius: var(--radius); font-size: 10px; height: 100%; }
   .painel { border: 1px solid var(--borda); border-radius: var(--radius); padding: 20px; box-shadow: var(--sombra); }
   .painel .titulo-veiculo .first-name { font-size: 24px; font-weight: 700; text-transform: uppercase; }
   .painel .titulo-veiculo .last-name  { font-size: 17px; font-weight: 400; color: var(--texto-fraco); text-transform: uppercase; }
@@ -44,11 +92,15 @@
     <div class="detalhe">
 
       <div class="galeria" id="galeria">
-        <div class="principal"><div class="img-placeholder">Foto principal</div></div>
-        <div class="miniatura"><div class="img-placeholder">Foto 2</div></div>
-        <div class="miniatura"><div class="img-placeholder">Foto 3</div></div>
-        <div class="miniatura"><div class="img-placeholder">Foto 4</div></div>
-        <div class="miniatura"><div class="img-placeholder">Foto 5</div></div>
+        <div class="galeria-palco">
+          <div class="galeria-trilho" id="galeria-trilho">
+            <figure class="galeria-slide"><div class="img-placeholder">Foto do veículo</div></figure>
+          </div>
+          <button type="button" class="galeria-nav prev" id="galeria-prev" aria-label="Foto anterior" hidden>&#8249;</button>
+          <button type="button" class="galeria-nav next" id="galeria-next" aria-label="Próxima foto" hidden>&#8250;</button>
+          <div class="galeria-contador" id="galeria-contador" hidden></div>
+        </div>
+        <div class="galeria-miniaturas" id="galeria-miniaturas"></div>
       </div>
 
       <aside class="painel" id="painel">
@@ -135,16 +187,87 @@ function preencher() {
       v.opcionais.map(function (o) { return '<li>' + o + '</li>'; }).join('');
   }
 
-  // Galeria: usa as fotos cadastradas; sem fotos, mantém os placeholders
+  // Galeria: usa as fotos cadastradas; sem fotos, mantém o placeholder
   var fotos = (v.fotos && v.fotos.length) ? v.fotos : (v.foto ? [v.foto] : []);
-  if (fotos.length) {
-    var g = document.getElementById('galeria');
-    g.innerHTML =
-      '<div class="principal"><img src="' + fotos[0] + '" alt="' + v.marca + ' ' + v.modelo + '"></div>' +
-      fotos.slice(1, 5).map(function (f) {
-        return '<div class="miniatura"><img src="' + f + '" alt="" loading="lazy" decoding="async"></div>';
-      }).join('');
+  if (fotos.length) montarGaleria(fotos, v.marca + ' ' + v.modelo);
+}
+
+/* Carrossel: arrastar no celular funciona pelo scroll-snap do CSS;
+   as setas, as miniaturas e o teclado apenas movem o mesmo scroll. */
+function montarGaleria(fotos, alt) {
+  var trilho    = document.getElementById('galeria-trilho');
+  var minis     = document.getElementById('galeria-miniaturas');
+  var prev      = document.getElementById('galeria-prev');
+  var next      = document.getElementById('galeria-next');
+  var contador  = document.getElementById('galeria-contador');
+  var atual     = 0;
+
+  trilho.innerHTML = fotos.map(function (f, i) {
+    return '<figure class="galeria-slide">' +
+      '<img src="' + f + '" alt="' + alt + ' — foto ' + (i + 1) + '"' +
+      (i === 0 ? ' fetchpriority="high"' : ' loading="lazy"') + ' decoding="async">' +
+    '</figure>';
+  }).join('');
+
+  minis.innerHTML = fotos.map(function (f, i) {
+    return '<button type="button" class="galeria-mini' + (i === 0 ? ' ativa' : '') + '" data-ir="' + i + '">' +
+      '<img src="' + f + '" alt="" loading="lazy" decoding="async">' +
+    '</button>';
+  }).join('');
+
+  var slides = trilho.querySelectorAll('.galeria-slide');
+  var unico  = fotos.length < 2;
+
+  prev.hidden = next.hidden = unico;
+  contador.hidden = unico;
+  minis.hidden = unico;
+
+  function ir(i) {
+    atual = Math.max(0, Math.min(fotos.length - 1, i));
+    var s = slides[atual];
+    // scrollLeft em vez de scrollIntoView: não arrasta a página junto
+    trilho.scrollLeft = s.offsetLeft - (trilho.clientWidth - s.clientWidth) / 2;
+    marcar();
   }
+
+  function marcar() {
+    contador.textContent = (atual + 1) + ' / ' + fotos.length;
+    prev.disabled = atual === 0;
+    next.disabled = atual === fotos.length - 1;
+    minis.querySelectorAll('.galeria-mini').forEach(function (b, i) {
+      b.classList.toggle('ativa', i === atual);
+    });
+  }
+
+  prev.addEventListener('click', function () { ir(atual - 1); });
+  next.addEventListener('click', function () { ir(atual + 1); });
+  minis.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-ir]');
+    if (b) ir(Number(b.dataset.ir));
+  });
+
+  // Arrasto/swipe: descobre o slide mais próximo do centro
+  var timer;
+  trilho.addEventListener('scroll', function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      var centro = trilho.scrollLeft + trilho.clientWidth / 2;
+      var perto = 0, menor = Infinity;
+      slides.forEach(function (s, i) {
+        var d = Math.abs((s.offsetLeft + s.clientWidth / 2) - centro);
+        if (d < menor) { menor = d; perto = i; }
+      });
+      atual = perto;
+      marcar();
+    }, 90);
+  }, { passive: true });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft')  ir(atual - 1);
+    if (e.key === 'ArrowRight') ir(atual + 1);
+  });
+
+  marcar();
 }
 </script>
 </body>
