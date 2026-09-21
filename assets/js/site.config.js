@@ -17,7 +17,7 @@ window.SITE = {
     whatsappLink: "https://wa.me/5561999783789",
     email: "contato@dominio.com.br",
     endereco: "Rua Exemplo, 000 — Cidade/UF",
-    horario: "Segunda a sexta: 00:00 às 00:00 | Sábados: 00:00 às 00:00",
+    horario: "Segunda a sexta: 08:00 às 18:00 | Sábados: 08:00 às 12:00",
   },
 
   // Deixe "" para esconder o widget lateral da rede
