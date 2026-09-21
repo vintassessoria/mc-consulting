@@ -142,7 +142,7 @@ function preencher() {
     g.innerHTML =
       '<div class="principal"><img src="' + fotos[0] + '" alt="' + v.marca + ' ' + v.modelo + '"></div>' +
       fotos.slice(1, 5).map(function (f) {
-        return '<div class="miniatura"><img src="' + f + '" alt=""></div>';
+        return '<div class="miniatura"><img src="' + f + '" alt="" loading="lazy" decoding="async"></div>';
       }).join('');
   }
 }

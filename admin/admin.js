@@ -292,6 +292,40 @@
     }).join('');
   }
 
+  /* Fotos de celular chegam com 20 MP e vários MB. Reduz para 1600px no maior
+     lado e recomprime em JPEG antes de subir: o site carrega rápido e o
+     Storage não enche. Se algo falhar, envia o arquivo original. */
+  var LADO_MAX = 1600;
+  var QUALIDADE = 0.82;
+
+  function otimizar(file) {
+    if (!/^image\//.test(file.type) || /svg/.test(file.type)) return Promise.resolve(file);
+
+    return new Promise(function (resolve) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var escala = Math.min(1, LADO_MAX / Math.max(img.width, img.height));
+        if (escala === 1 && file.size < 900 * 1024) return resolve(file);
+
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.width * escala);
+        c.height = Math.round(img.height * escala);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+
+        c.toBlob(function (blob) {
+          if (!blob || blob.size >= file.size) return resolve(file);
+          resolve(new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }));
+        }, 'image/jpeg', QUALIDADE);
+      };
+
+      img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+
   function enviarFotos(files) {
     var lista = Array.prototype.slice.call(files);
     if (!lista.length) return;
@@ -301,7 +335,8 @@
 
     lista.reduce(function (fila, file) {
       return fila.then(function () {
-        return window.API.enviarFoto(file)
+        return otimizar(file)
+          .then(window.API.enviarFoto)
           .then(function (url) { estado.fotos.push(url); desenharFotos(); })
           .catch(function (err) { recado('form-erro', 'Foto "' + file.name + '": ' + err.message); })
           .finally(function () {
