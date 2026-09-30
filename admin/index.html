@@ -32,6 +32,13 @@
   <form class="adm-login" id="form-login">
     <img src="/assets/img/logo-preta.png" alt="MC Consulting">
     <h1>Acesso ao painel</h1>
+    <div class="aviso aviso-erro" id="banco-fora" hidden>
+      <strong>Banco de dados fora do ar.</strong><br>
+      O projeto no Supabase não está respondendo. Entre em
+      <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">supabase.com/dashboard</a>
+      e verifique se ele foi pausado (basta reativar) ou removido (precisa ser recriado).
+      Enquanto isso o site continua no ar, mostrando os veículos de reserva.
+    </div>
     <div class="aviso aviso-erro" id="login-erro" hidden></div>
     <div class="campo">
       <label for="login-email">E-mail</label>

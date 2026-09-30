@@ -406,6 +406,12 @@
     } else {
       mostrar('tela-login');
     }
+
+    // Avisa de cara se o banco não responde, em vez de deixar o login falhar
+    window.API.disponivel().then(function (ok) {
+      $('banco-fora').hidden = ok;
+      $('login-botao').disabled = !ok;
+    });
   }
 
   if (document.readyState === 'loading') {

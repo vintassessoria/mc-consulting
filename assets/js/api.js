@@ -19,6 +19,23 @@
     return !!(CFG.url && CFG.anonKey);
   }
 
+  var SEM_BANCO = 'Não foi possível falar com o banco de dados. ' +
+    'Verifique em supabase.com se o projeto continua ativo: no plano gratuito ' +
+    'ele é pausado após dias sem uso, e um projeto removido precisa ser recriado.';
+
+  // fetch que troca "Failed to fetch" por uma explicação útil
+  function rede(url, opcoes) {
+    return fetch(url, opcoes).catch(function () { throw new Error(SEM_BANCO); });
+  }
+
+  // Ping rápido: diz se o banco responde, sem levantar erro
+  function disponivel() {
+    if (!configurado()) return Promise.resolve(false);
+    return fetch(CFG.url + '/rest/v1/veiculos?select=id&limit=1', {
+      headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + CFG.anonKey }
+    }).then(function (r) { return r.ok; }).catch(function () { return false; });
+  }
+
   /* ---------------------------------------------------------- sessão ---- */
   function sessao() {
     try { return JSON.parse(localStorage.getItem(CHAVE_SESSAO) || 'null'); }
@@ -36,7 +53,7 @@
   }
 
   function auth(caminho, corpo) {
-    return fetch(CFG.url + '/auth/v1' + caminho, {
+    return rede(CFG.url + '/auth/v1' + caminho, {
       method: 'POST',
       headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' },
       body: JSON.stringify(corpo)
@@ -57,7 +74,7 @@
     var s = sessao();
     guardarSessao(null);
     if (!s) return Promise.resolve();
-    return fetch(CFG.url + '/auth/v1/logout', {
+    return rede(CFG.url + '/auth/v1/logout', {
       method: 'POST',
       headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + s.access_token }
     }).catch(function () {});
@@ -88,7 +105,7 @@
         };
         if (opcoes.retornar) cab.Prefer = 'return=representation';
 
-        return fetch(CFG.url + '/rest/v1' + caminho, {
+        return rede(CFG.url + '/rest/v1' + caminho, {
           method: opcoes.metodo || 'GET',
           headers: cab,
           body: opcoes.corpo ? JSON.stringify(opcoes.corpo) : undefined
@@ -181,7 +198,7 @@
       var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
       var nome = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
 
-      return fetch(CFG.url + '/storage/v1/object/veiculos/' + nome, {
+      return rede(CFG.url + '/storage/v1/object/veiculos/' + nome, {
         method: 'POST',
         headers: {
           apikey: CFG.anonKey,
@@ -201,7 +218,7 @@
     if (!nome) return Promise.resolve();
     return tokenValido().then(function (token) {
       if (!token) return;
-      return fetch(CFG.url + '/storage/v1/object/veiculos/' + nome, {
+      return rede(CFG.url + '/storage/v1/object/veiculos/' + nome, {
         method: 'DELETE',
         headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + token }
       }).catch(function () {});
@@ -211,6 +228,7 @@
   window.API = {
     configurado: configurado,
     entrar: entrar, sair: sair, sessao: sessao,
+    disponivel: disponivel,
     listar: listar, salvar: salvar, remover: remover,
     enviarFoto: enviarFoto, removerFoto: removerFoto
   };
